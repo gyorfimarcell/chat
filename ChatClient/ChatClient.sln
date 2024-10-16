@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35327.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatClient", "ChatClient.csproj", "{BC07ADA2-0A1C-402F-9D6A-F1A7C908F616}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC07ADA2-0A1C-402F-9D6A-F1A7C908F616}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC07ADA2-0A1C-402F-9D6A-F1A7C908F616}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC07ADA2-0A1C-402F-9D6A-F1A7C908F616}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC07ADA2-0A1C-402F-9D6A-F1A7C908F616}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {410684CB-C427-45C3-9856-C6E41DF085E3}
+	EndGlobalSection
+EndGlobal
