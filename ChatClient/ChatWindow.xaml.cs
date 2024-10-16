@@ -36,13 +36,13 @@ namespace ChatClient
         {
             client = new();
             await client.ConnectAsync(new Uri("ws://localhost:7890"), CancellationToken.None);
-            await SendMessage($"[connect]{username}");
+            await SendMessage(new Message(MessageType.Connect, username, ""));
             await RecieveMessages();
         }
 
-        public async Task SendMessage(string message)
+        public async Task SendMessage(Message message)
         {
-            var buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message));
+            var buffer = new ArraySegment<byte>(Encoding.UTF8.GetBytes(message.ToJson()));
             await client.SendAsync(buffer, WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
@@ -62,7 +62,7 @@ namespace ChatClient
         {
             if (tbMessage.Text != "")
             {
-                await SendMessage($"[public]{tbMessage.Text}");
+                await SendMessage(new Message(MessageType.Public, username, tbMessage.Text));
                 tbMessage.Clear();
             }
         }

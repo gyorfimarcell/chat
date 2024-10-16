@@ -1,5 +1,6 @@
 import websockets
 import asyncio
+import json
 
 clients = {}
 
@@ -7,14 +8,16 @@ clients = {}
 async def ws_server(websocket):
     try:
         async for message in websocket:
-            if message.startswith("[connect]"):
-                message = message.replace("[connect]", "", 1)
-                clients[websocket] = message
-                await broadcast_message(f"{clients[websocket]} connected.", "System")
+            json_message = json.loads(message)
 
-            elif message.startswith("[public]"):
-                message = message.replace("[public]", "", 1)
-                await broadcast_message(message, clients[websocket])
+            if json_message["type"] == 0:
+                clients[websocket] = json_message["sender"]
+                await broadcast_message(
+                    f"{json_message["sender"]} connected.", "System"
+                )
+
+            elif json_message["type"] == 2:
+                await broadcast_message(json_message["text"], clients[websocket])
 
     except websockets.exceptions.ConnectionClosedError:
         pass
