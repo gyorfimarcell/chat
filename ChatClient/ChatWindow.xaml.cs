@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
@@ -24,11 +25,15 @@ namespace ChatClient
         string username;
         ClientWebSocket client;
 
+        ObservableCollection<string> users = [];
+
         public ChatWindow(string username)
         {
             this.username = username;
 
             InitializeComponent();
+
+            lbUsers.ItemsSource = users;
 
             Connect();
         }
@@ -62,12 +67,18 @@ namespace ChatClient
                     {
                         case MessageType.Connect:
                             lbMessages.Items.Add($"System: {message.Sender} connected.");
+                            users.Add(message.Sender);
                             break;
                         case MessageType.Disconnect:
                             lbMessages.Items.Add($"System: {message.Sender} disconnected.");
+                            users.Remove(message.Sender);
                             break;
                         case MessageType.Public:
                             lbMessages.Items.Add($"{message.Sender}: {message.Text}");
+                            break;
+                        case MessageType.UserListSync:
+                            users = new(JsonSerializer.Deserialize<List<string>>(message.Text));
+                            lbUsers.ItemsSource = users;
                             break;
                         default:
                             break;

@@ -9,6 +9,7 @@ class MessageType(Enum):
     Connect = 0
     Disconnect = 1
     Public = 2
+    UserListSync = 3
 
 
 class Message(TypedDict):
@@ -36,6 +37,14 @@ async def ws_server(websocket):
                         clients[websocket],
                         "",
                     )
+
+                    await send_message(
+                        clients[websocket],
+                        MessageType.UserListSync,
+                        "",
+                        json.dumps(list(clients.values())),
+                    )
+
                 case MessageType.Public:
                     await broadcast_message(
                         MessageType.Public, clients[websocket], json_message["text"]
@@ -49,10 +58,16 @@ async def ws_server(websocket):
         await broadcast_message(MessageType.Disconnect, user, "")
 
 
-async def broadcast_message(type: MessageType, sender: str, text: str):
+async def send_message(user: str, type: MessageType, sender: str, text: str):
     full_message: Message = {"type": type.value, "sender": sender, "text": text}
     print(full_message)
-    [await c.send(json.dumps(full_message)) for c in clients.keys()]
+
+    client = [key for key, value in clients.items() if value == user][0]
+    await client.send(json.dumps(full_message))
+
+
+async def broadcast_message(type: MessageType, sender: str, text: str):
+    [await send_message(user, type, sender, text) for user in clients.values()]
 
 
 async def main():

@@ -31,5 +31,6 @@ namespace ChatClient
         Connect,
         Disconnect,
         Public,
+        UserListSync,
     }
 }
