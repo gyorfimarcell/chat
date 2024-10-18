@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -52,9 +53,26 @@ namespace ChatClient
             {
                 ArraySegment<byte> buffer = new ArraySegment<byte>(new byte[1024]);
                 WebSocketReceiveResult result = await client.ReceiveAsync(buffer, CancellationToken.None);
-                string message = Encoding.UTF8.GetString(buffer.Array, 0, result.Count);
+                string jsonMessage = Encoding.UTF8.GetString(buffer.Array, 0, result.Count);
 
-                lbMessages.Items.Add(message);
+                Message? message = JsonSerializer.Deserialize<Message>(jsonMessage, options: new() {PropertyNameCaseInsensitive = true });
+                if (message != null)
+                {
+                    switch (message.Type)
+                    {
+                        case MessageType.Connect:
+                            lbMessages.Items.Add($"System: {message.Sender} connected.");
+                            break;
+                        case MessageType.Disconnect:
+                            lbMessages.Items.Add($"System: {message.Sender} disconnected.");
+                            break;
+                        case MessageType.Public:
+                            lbMessages.Items.Add($"{message.Sender}: {message.Text}");
+                            break;
+                        default:
+                            break;
+                    }
+                }
             }
         }
 
