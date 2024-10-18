@@ -42,7 +42,10 @@ namespace ChatClient
         {
             client = new();
             await client.ConnectAsync(new Uri("ws://localhost:7890"), CancellationToken.None);
-            await SendMessage(new Message(MessageType.Connect, username, ""));
+            await SendMessage(new Message(MessageType.Connect, username, "", null));
+
+            Title = $"Chat - {username}";
+
             await RecieveMessages();
         }
 
@@ -68,17 +71,22 @@ namespace ChatClient
                         case MessageType.Connect:
                             lbMessages.Items.Add($"System: {message.Sender} connected.");
                             users.Add(message.Sender);
+                            UpdateUsers();
                             break;
                         case MessageType.Disconnect:
                             lbMessages.Items.Add($"System: {message.Sender} disconnected.");
                             users.Remove(message.Sender);
+                            UpdateUsers();
                             break;
                         case MessageType.Public:
                             lbMessages.Items.Add($"{message.Sender}: {message.Text}");
                             break;
                         case MessageType.UserListSync:
                             users = new(JsonSerializer.Deserialize<List<string>>(message.Text));
-                            lbUsers.ItemsSource = users;
+                            UpdateUsers();
+                            break;
+                        case MessageType.Private:
+                            lbMessages.Items.Add($">{message.Sender}>{message.Target}: {message.Text}");
                             break;
                         default:
                             break;
@@ -87,11 +95,29 @@ namespace ChatClient
             }
         }
 
+        private void UpdateUsers() {
+            lbUsers.ItemsSource = users;
+            cbTarget.ItemsSource = users.Where(x => x != username).Prepend("Public");
+
+            if (cbTarget.SelectedIndex == -1)
+            {
+                cbTarget.SelectedIndex = 0;
+            }
+        }
+
         private async void btnSend_Click(object sender, RoutedEventArgs e)
         {
             if (tbMessage.Text != "")
             {
-                await SendMessage(new Message(MessageType.Public, username, tbMessage.Text));
+                if (cbTarget.SelectedIndex == 0)
+                {
+                    await SendMessage(new Message(MessageType.Public, username, tbMessage.Text, null));
+                }
+                else
+                {
+                    await SendMessage(new Message(MessageType.Private, username, tbMessage.Text, cbTarget.SelectedItem.ToString()));
+                }
+     
                 tbMessage.Clear();
             }
         }

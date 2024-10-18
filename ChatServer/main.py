@@ -10,12 +10,14 @@ class MessageType(Enum):
     Disconnect = 1
     Public = 2
     UserListSync = 3
+    Private = 4
 
 
 class Message(TypedDict):
     type: int
     sender: str
     text: str
+    target: str
 
     def __str__(this):
         return f"{this.sender}: {this.text}"
@@ -50,6 +52,22 @@ async def ws_server(websocket):
                         MessageType.Public, clients[websocket], json_message["text"]
                     )
 
+                case MessageType.Private:
+                    await send_message(
+                        json_message["target"],
+                        MessageType.Private,
+                        clients[websocket],
+                        json_message["text"],
+                        json_message["target"],
+                    )
+                    await send_message(
+                        clients[websocket],
+                        MessageType.Private,
+                        clients[websocket],
+                        json_message["text"],
+                        json_message["target"],
+                    )
+
     except websockets.exceptions.ConnectionClosedError:
         pass
     finally:
@@ -58,16 +76,29 @@ async def ws_server(websocket):
         await broadcast_message(MessageType.Disconnect, user, "")
 
 
-async def send_message(user: str, type: MessageType, sender: str, text: str):
-    full_message: Message = {"type": type.value, "sender": sender, "text": text}
+async def send_message(
+    user: str, type: MessageType, sender: str, text: str, target: str = None
+):
+    full_message: Message = {
+        "type": type.value,
+        "sender": sender,
+        "text": text,
+        "target": target,
+    }
     print(full_message)
 
-    client = [key for key, value in clients.items() if value == user][0]
+    client = get_by_username(user)
     await client.send(json.dumps(full_message))
 
 
-async def broadcast_message(type: MessageType, sender: str, text: str):
-    [await send_message(user, type, sender, text) for user in clients.values()]
+async def broadcast_message(
+    type: MessageType, sender: str, text: str, target: str = None
+):
+    [await send_message(user, type, sender, text, target) for user in clients.values()]
+
+
+def get_by_username(username: str):
+    return [key for key, value in clients.items() if value == username][0]
 
 
 async def main():

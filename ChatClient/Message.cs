@@ -9,16 +9,18 @@ namespace ChatClient
 {
     public class Message
     {
-        public Message(MessageType type, string sender, string text)
+        public Message(MessageType type, string sender, string text, string target)
         {
             Type = type;
             Sender = sender;
             Text = text;
+            Target = target;
         }
 
         public MessageType Type { get; set; }
         public string Sender { get; set; }
         public string Text { get; set; }
+        public string? Target { get; set; }
 
         public string ToJson()
         {
@@ -32,5 +34,6 @@ namespace ChatClient
         Disconnect,
         Public,
         UserListSync,
+        Private
     }
 }
